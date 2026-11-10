@@ -23,11 +23,13 @@ Out of the box nothing changes. Pick your gestures in *System Settings › Mouse
 
 ### Arch Linux, CachyOS, Manjaro, EndeavourOS
 
+Download `swyper-plasma-1.0.0-1-any.pkg.tar.zst` from the [latest release](https://github.com/EliSantana1/swyper-plasma/releases/latest), then install it:
+
 ```
-paru -S swyper-plasma
+sudo pacman -U swyper-plasma-1.0.0-1-any.pkg.tar.zst
 ```
 
-(or `yay -S swyper-plasma`). Then log out and back in once.
+Then log out and back in once. An AUR package (`paru -S swyper-plasma` / `yay -S swyper-plasma`) is coming soon.
 
 ### Other distributions
 
