@@ -1,0 +1,12 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = kwin
+Target = qt6-base
+Target = swyper-plasma
+
+[Action]
+Description = Building Swyper for the installed KWin...
+When = PostTransaction
+Exec = /usr/lib/swyper-plasma/rebuild

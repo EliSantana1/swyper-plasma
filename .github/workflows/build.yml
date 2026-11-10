@@ -1,0 +1,57 @@
+# Builds Swyper against the KDE Plasma versions of several distributions.
+# Each build only compiles; it shows which KWin versions the code works with.
+name: Build
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "17 4 * * 1" # every Monday, to catch new KWin releases early
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Arch Linux (latest Plasma)
+            image: archlinux:latest
+            deps: >-
+              pacman -Syu --noconfirm --needed base-devel cmake extra-cmake-modules binutils
+              kwin kcmutils kirigami ki18n kconfig kcoreaddons qt6-base qt6-declarative vulkan-headers
+          - name: Fedora
+            image: fedora:latest
+            deps: >-
+              dnf install -y gcc-c++ make cmake extra-cmake-modules binutils
+              kwin-devel kf6-kcmutils-devel kf6-kirigami-devel kf6-ki18n-devel kf6-kconfig-devel
+              kf6-kcoreaddons-devel qt6-qtbase-devel qt6-qtdeclarative-devel vulkan-headers
+          - name: openSUSE Tumbleweed
+            image: opensuse/tumbleweed:latest
+            deps: >-
+              zypper --non-interactive install gcc-c++ make cmake kf6-extra-cmake-modules binutils
+              kwin6-devel kf6-kcmutils-devel kf6-kirigami-devel kf6-ki18n-devel kf6-kconfig-devel
+              kf6-kcoreaddons-devel qt6-base-devel qt6-declarative-devel vulkan-headers
+          - name: Debian 13
+            image: debian:trixie
+            deps: >-
+              apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
+              build-essential cmake extra-cmake-modules binutils kwin-dev libkf6kcmutils-dev
+              libkirigami-dev libkf6i18n-dev libkf6config-dev libkf6coreaddons-dev qt6-base-dev
+              qt6-declarative-dev libvulkan-dev
+    steps:
+      - name: Install build dependencies
+        run: ${{ matrix.deps }}
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+      - name: Build
+        run: cmake --build build -j"$(nproc)"
+      - name: KWin version built against
+        run: grep -h "Building against" build/CMakeFiles/CMakeConfigureLog.yaml 2>/dev/null || cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr | grep "Building against"

@@ -1,0 +1,21 @@
+# Local development package. The plugin itself is built on the installing machine by a pacman hook
+# (like DKMS), so it always matches that machine's exact KWin build.
+pkgname=swyper-plasma
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Swyper: touchpad gestures for KDE Plasma with KWin's native animations"
+arch=('any')
+url="https://github.com/EliSantana1/swyper-plasma"
+license=('GPL-3.0-or-later')
+depends=('kwin' 'qt6-base' 'kcoreaddons' 'kconfig' 'kcmutils' 'kirigami' 'ki18n' 'qt6-declarative' 'cmake' 'extra-cmake-modules' 'gcc' 'make' 'binutils' 'vulkan-headers')
+
+package() {
+    local src="$startdir/../.."
+    install -d "$pkgdir/usr/src/$pkgname"
+    install -m644 "$src/CMakeLists.txt" "$pkgdir/usr/src/$pkgname/"
+    cp -r --no-preserve=ownership "$src/src" "$pkgdir/usr/src/$pkgname/"
+    find "$pkgdir/usr/src/$pkgname" -type d -exec chmod 755 {} + -o -type f -exec chmod 644 {} +
+    install -Dm755 "$startdir/rebuild" "$pkgdir/usr/lib/$pkgname/rebuild"
+    install -Dm644 "$startdir/build.hook" "$pkgdir/usr/share/libalpm/hooks/90-$pkgname-build.hook"
+    install -Dm644 "$startdir/remove.hook" "$pkgdir/usr/share/libalpm/hooks/90-$pkgname-remove.hook"
+}

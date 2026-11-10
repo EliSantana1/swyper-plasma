@@ -1,0 +1,9 @@
+{
+    "KPlugin": {
+        "Name": "Swyper",
+        "Description": "Touchpad gestures for KDE Plasma, with KWin's native animations",
+        "License": "GPL-3.0-or-later",
+        "Version": "1.0.0",
+        "EnabledByDefault": true
+    }
+}

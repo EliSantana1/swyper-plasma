@@ -1,0 +1,12 @@
+{
+    "KPlugin": {
+        "Name": "Touchpad Gestures",
+        "Description": "Swyper: choose what 3- and 4-finger touchpad swipes do",
+        "Icon": "input-touchpad",
+        "License": "GPL-3.0-or-later",
+        "Version": "1.0.0"
+    },
+    "X-KDE-Keywords": "swyper,touchpad,trackpad,gestures,swipe,fingers,overview,window switcher",
+    "X-KDE-System-Settings-Parent-Category": "pointing-devices",
+    "X-KDE-Weight": 60
+}

@@ -1,0 +1,9 @@
+[Trigger]
+Operation = Remove
+Type = Package
+Target = swyper-plasma
+
+[Action]
+Description = Removing the built Swyper plugin...
+When = PreTransaction
+Exec = /usr/lib/swyper-plasma/rebuild --remove

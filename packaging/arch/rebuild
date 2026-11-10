@@ -1,0 +1,52 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Builds the Swyper KWin plugin for the KWin installed right now, or removes it (--remove).
+# Run by pacman hooks. It never fails the system update: if a build fails, the previous build stays,
+# and its safety lock pauses it, so Plasma's standard gestures keep working.
+# SWYPER_TEST_ROOT=/some/dir runs it against a scratch root instead of / (for testing as a normal user).
+set -uo pipefail
+NAME=swyper-plasma
+ROOT="${SWYPER_TEST_ROOT:-}"
+SRC="${SWYPER_TEST_SRC:-/usr/src/$NAME}"
+STATE="$ROOT/var/lib/$NAME"
+MANIFEST="$STATE/installed-files"
+LOG="$ROOT/var/log/$NAME-build.log"
+
+remove_files() { # paths (relative to ROOT) on stdin
+    while IFS= read -r f; do
+        [ -n "$f" ] && rm -f -- "$ROOT$f"
+    done
+}
+
+if [ "${1:-}" = "--remove" ]; then
+    [ -f "$MANIFEST" ] && remove_files < "$MANIFEST"
+    rm -rf -- "$STATE"
+    rm -f -- "$LOG"
+    rmdir --ignore-fail-on-non-empty "$ROOT/usr/lib/$NAME" 2>/dev/null
+    exit 0
+fi
+
+work=$(mktemp -d "${TMPDIR:-/tmp}/$NAME-build.XXXXXX") || exit 0
+trap 'rm -rf -- "$work"' EXIT
+mkdir -p "$(dirname "$LOG")"
+echo "==> Building $NAME for the installed KWin..."
+if ! { cmake -S "$SRC" -B "$work/build" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DKDE_INSTALL_LIBEXECDIR=lib \
+        && cmake --build "$work/build" -j"$(nproc)" \
+        && DESTDIR="$work/stage" cmake --install "$work/build"; } > "$LOG" 2>&1; then
+    echo "==> $NAME: build FAILED, see $LOG. Plasma's standard gestures stay active."
+    exit 0
+fi
+
+(cd "$work/stage" && find . -type f) | sed 's|^\.||' | sort > "$work/new-files"
+if grep -qv '^/usr/' "$work/new-files"; then
+    echo "==> $NAME: refusing to install files outside /usr."
+    exit 0
+fi
+# Swap every file in with a rename, so a running KWin keeps using its loaded copy until the next login.
+while IFS= read -r f; do
+    install -D -m "$(stat -c %a "$work/stage$f")" "$work/stage$f" "$ROOT$f.$NAME-new" && mv -f "$ROOT$f.$NAME-new" "$ROOT$f"
+done < "$work/new-files"
+mkdir -p "$STATE"
+[ -f "$MANIFEST" ] && comm -23 <(sort "$MANIFEST") "$work/new-files" | remove_files # files the new build no longer has
+cp "$work/new-files" "$MANIFEST"
+echo "==> $NAME: built and installed. It takes effect at the next login."
