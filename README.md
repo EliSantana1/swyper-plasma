@@ -16,7 +16,7 @@ Out of the box nothing changes. Pick your gestures in *System Settings › Mouse
 
 ## Requirements
 
-- KDE Plasma 6 on Wayland (developed and tested on Plasma 6.8).
+- KDE Plasma 6.8 or newer, on Wayland.
 - A touchpad that tracks at least 4 fingers.
 
 ## Install

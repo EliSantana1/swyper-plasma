@@ -15,6 +15,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui DBus Widgets Quick)
 find_package(KF6 6.0 REQUIRED COMPONENTS CoreAddons Config KCMUtils I18n)
 find_package(KWin REQUIRED)
+if(KWin_VERSION VERSION_LESS 6.8)
+    message(FATAL_ERROR "Swyper needs KDE Plasma 6.8 or newer (found KWin ${KWin_VERSION}).")
+endif()
 
 # Safety lock: remember exactly which libkwin this plugin is built against (its ELF build ID).
 # At login the plugin compares it with the running KWin and pauses itself if they differ.
